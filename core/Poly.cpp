@@ -41,7 +41,7 @@ void applyPoly(const Settings& s, const Bar& bar, int kit, int nBars, std::vecto
         int re = realignBars(N, s.meter);
         report += "Цикл ног: " + std::to_string(N) + " шестнадцатых (" + pat + "), совпадает с тактом через " + std::to_string(re) +
                   " т. Здесь " + std::to_string(total / N) + " полных циклов";
-        if (total % N) report += " и хвост " + std::to_string(total % N) + " шестнадцатых, со следующего повтора цикл начинается заново";
+        if (total % N) report += " и хвост " + std::to_string(total % N) + " (в шестнадцатых), со следующего повтора цикл начинается заново";
         report += "\n";
     } else if (s.poly == P_CROSS) {
         int voice = crossVoice(kit);

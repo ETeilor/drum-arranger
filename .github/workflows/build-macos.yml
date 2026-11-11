@@ -1,0 +1,64 @@
+name: macOS installer (AU + VST3 + app)
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (universal arm64 + x86_64)
+        run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
+
+      - name: Build
+        run: cmake --build build --config Release --target drums_cli drums_tests DrumArranger_AU DrumArranger_VST3 DrumArranger_Standalone DrumArrangerLive_AU DrumArrangerLive_VST3
+
+      - name: Engine tests (every style, meter and tempo; playability; fills; MIDI)
+        run: build/Release/drums_tests
+
+      - name: Validate the Audio Unit with auval
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R "build/DrumArranger_artefacts/Release/AU/Drum Arranger.component" ~/Library/Audio/Plug-Ins/Components/
+          cp -R "build/DrumArrangerLive_artefacts/Release/AU/Drum Arranger Live.component" ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          sleep 2
+          auval -v aumu Drum Tlrm
+          auval -v aumi DrLv Tlrm
+
+      - name: Installer (.pkg and .dmg)
+        run: bash scripts/make_installer.sh 0.1.0
+
+      - name: Install the package the way a user does and validate the installed AU
+        run: |
+          rm -rf ~/Library/Audio/Plug-Ins/Components/"Drum Arranger.component" ~/Library/Audio/Plug-Ins/Components/"Drum Arranger Live.component"
+          PKG=$(ls dist/*.pkg)
+          # mark the package as downloaded from the internet, like a browser does
+          xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;$(uuidgen)" "$PKG"
+          sudo installer -pkg "$PKG" -target /
+          C="/Library/Audio/Plug-Ins/Components/Drum Arranger.component"
+          echo "attributes after install:"; xattr -l "$C" || true
+          codesign -dv "$C" 2>&1 | head -5
+          echo "minimum macOS of the binary:"; vtool -show-build "$C/Contents/MacOS/Drum Arranger" | grep -E "minos|platform" 
+          killall -9 AudioComponentRegistrar || true
+          sleep 2
+          auval -v aumu Drum Tlrm
+
+      - name: Diagnostic - does a quarantine flag alone break loading?
+        continue-on-error: true
+        run: |
+          C="/Library/Audio/Plug-Ins/Components/Drum Arranger.component"
+          sudo xattr -w -r com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;$(uuidgen)" "$C"
+          killall -9 AudioComponentRegistrar || true
+          sleep 2
+          auval -v aumu Drum Tlrm 2>&1 | tail -15
+          sudo xattr -dr com.apple.quarantine "$C"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: DrumArranger-macOS
+          path: dist/*

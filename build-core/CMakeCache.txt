@@ -237,6 +237,9 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 //Build the JUCE plug-in (AU/VST3/Standalone)
 DRUMS_BUILD_PLUGIN:BOOL=OFF
 
+//Build the plug-in test runner
+DRUMS_BUILD_TESTS:BOOL=OFF
+
 //Local JUCE checkout; empty = download JUCE 8.0.4
 DRUMS_JUCE_PATH:PATH=
 
