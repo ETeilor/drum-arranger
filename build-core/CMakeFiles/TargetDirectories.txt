@@ -1,0 +1,5 @@
+/home/claude/drum-arranger/build-core/CMakeFiles/drums_core.dir
+/home/claude/drum-arranger/build-core/CMakeFiles/drums_cli.dir
+/home/claude/drum-arranger/build-core/CMakeFiles/drums_tests.dir
+/home/claude/drum-arranger/build-core/CMakeFiles/edit_cache.dir
+/home/claude/drum-arranger/build-core/CMakeFiles/rebuild_cache.dir

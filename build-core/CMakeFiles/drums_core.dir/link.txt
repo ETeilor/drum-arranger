@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdrums_core.a CMakeFiles/drums_core.dir/core/Engine.cpp.o CMakeFiles/drums_core.dir/core/Generate.cpp.o CMakeFiles/drums_core.dir/core/Fills.cpp.o CMakeFiles/drums_core.dir/core/Poly.cpp.o CMakeFiles/drums_core.dir/core/Midi.cpp.o
+/usr/bin/ranlib libdrums_core.a
